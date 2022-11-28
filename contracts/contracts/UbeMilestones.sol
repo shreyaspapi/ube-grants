@@ -75,6 +75,8 @@ contract UbeGrants is Ownable {
             grant.state = State.Rejected;
         }
 
+        // TODO: Work on taking escrow amount from DAO multisig
+
         emit GrantState(_grantId, uint256(grant.state));
     }
 
@@ -111,7 +113,7 @@ contract UbeGrants is Ownable {
 
         // TODO: Send the milestone amount to the grantee
 
-        emit GrantMilestone(grantId, payout, grant.milestoneAmounts[payout], grant.milestoneDeliveries[payout], approve);
+        emit GrantMilestone(grantId, payout, grant.milestoneAmounts[payout], grant.milestoneDeliveries[grant.milestoneDeliveries.length - 1], approve);
     }
 
     function getGrant(uint256 grantId) external view returns (Grant memory) {
