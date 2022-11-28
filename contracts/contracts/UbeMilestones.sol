@@ -111,7 +111,7 @@ contract UbeGrants is Ownable {
         Grant storage grant = grants[grantId];
         require(grant.grantee == msg.sender, "Only grantee can apply for complete milestones");
         require(grant.state == State.Active, "Grant must be active");
-        require(grant.nextPayout < grant.milestoneAmounts, "All milestones have been completed");
+        require(grant.nextPayout < grant.milestoneAmounts.length, "All milestones have been completed");
         
         grant.milestoneDeliveries.push(ipfsHash);
 
