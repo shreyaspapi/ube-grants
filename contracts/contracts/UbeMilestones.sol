@@ -16,10 +16,11 @@ contract UbeGrants is Ownable {
     event GrantCreated(uint256 grantId, uint256[] milestoneAmounts, address creator, string ipfsHash);
     event GrantState(uint256 grantId, uint256 state);
     event GrantMilestone(uint256 grantId, uint256 milestoneId, uint256 amount, string ipfsHash, bool approved);
+    event GrantMilestoneApplied(uint256 grantId, uint256 milestoneId, string ipfsHash);
 
     // States
     // Pending - waiting for approval
-    // Approved - approved by the community or DAO multiseg address
+    // Active - active by the community or DAO multiseg address
     // Rejected - rejected by the community or DAO multiseg address
     // Completed - completed by the grantee
     // Cancelled - Cancelled after getting accepeted by the community or DAO multiseg address
@@ -27,7 +28,6 @@ contract UbeGrants is Ownable {
 
     struct Grant {
         uint256 id;
-        string name;
         address grantee;
         string ipfsHash;
         State state;
@@ -42,7 +42,7 @@ contract UbeGrants is Ownable {
     constructor(address _daoMultisig, address _ubeTokenAddress) {
         daoMultisig = _daoMultisig;
         // Genisis grant
-        grants.push(Grant(0, "", address(0), "", State.Pending, 0, 0, new uint256[](0), new string[](0)));
+        grants.push(Grant(0, address(0), "", State.Pending, 0, 0, new uint256[](0), new string[](0)));
         ubeTokenAddress = _ubeTokenAddress;
     }
 
@@ -52,7 +52,11 @@ contract UbeGrants is Ownable {
     }
 
     // Grantee will be able to apply for grants and add milestones
-    function applyForGrant(string memory _name, string memory _ipfsHash, uint256[] memory milestoneAmounts) external {
+    // Form - 
+    // 1. Name of the grant
+    // 2. Description of the grant
+    // 3. Milestones
+    function applyForGrant(string memory _ipfsHash, uint256[] memory milestoneAmounts) external {
         uint256 grantId = grants.length;
         uint256 totalGrantAmount = 0;
 
@@ -62,7 +66,6 @@ contract UbeGrants is Ownable {
 
         Grant memory newGrant = Grant({
             id: grantId,
-            name: _name,
             grantee: msg.sender,
             ipfsHash: _ipfsHash,
             state: State.Pending,
@@ -100,8 +103,6 @@ contract UbeGrants is Ownable {
         require(grant.grantee == msg.sender, "Only grantee can cancel grant");
         grant.state = State.Cancelled;
 
-        // TODO: Send the remaining grant amount back to the DAO
-
         IERC20(ubeTokenAddress).safeTransfer(daoMultisig, grant.totalAmount);
 
         emit GrantState(_grantId, uint256(grant.state));
@@ -115,7 +116,7 @@ contract UbeGrants is Ownable {
         
         grant.milestoneDeliveries.push(ipfsHash);
 
-        emit GrantState(grantId, uint256(grant.state));
+        emit GrantMilestoneApplied(grantId, grant.nextPayout, ipfsHash);
     }
 
     function approveOrRejectMilestone(uint256 grantId, bool approve) external {
