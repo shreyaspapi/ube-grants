@@ -10,12 +10,13 @@ contract UbeGrants is Ownable {
     using SafeERC20 for IERC20;
 
     Grant[] public grants;
+    mapping(uint256 => MilestoneDelivery[]) public grantToMilestones;
     address public ubeTokenAddress;
 
     // Events
     event GrantCreated(uint256 grantId, uint256[] milestoneAmounts, address creator, string ipfsHash);
-    event GrantState(uint256 grantId, uint256 state);
-    event GrantMilestone(uint256 grantId, uint256 milestoneId, uint256 amount, string ipfsHash, bool approved);
+    event GrantStateChanged(uint256 grantId, uint256 state);
+    event GrantMilestoneStatus(uint256 grantId, uint256 milestoneId, uint256 amount, string ipfsHash, bool approved);
     event GrantMilestoneApplied(uint256 grantId, uint256 milestoneId, string ipfsHash);
 
     // States
@@ -26,6 +27,14 @@ contract UbeGrants is Ownable {
     // Cancelled - Cancelled after getting accepeted by the community or DAO multiseg address
     enum State { Pending, Active, Rejected, Completed, Cancelled }
 
+    enum MilestoneStatus { Pending, Approved, Rejected }
+
+    struct MilestoneDelivery {
+        string ipfsHash;
+        uint256 amount;
+        MilestoneStatus state;
+    }
+
     struct Grant {
         uint256 id;
         address grantee;
@@ -34,7 +43,6 @@ contract UbeGrants is Ownable {
         uint256 nextPayout;
         uint256 totalAmount;
         uint256[] milestoneAmounts;
-        string[] milestoneDeliveries;
     }
 
     address public daoMultisig;
@@ -42,7 +50,7 @@ contract UbeGrants is Ownable {
     constructor(address _daoMultisig, address _ubeTokenAddress) {
         daoMultisig = _daoMultisig;
         // Genisis grant
-        grants.push(Grant(0, address(0), "", State.Pending, 0, 0, new uint256[](0), new string[](0)));
+        grants.push(Grant(0, address(0), "", State.Pending, 0, 0, new uint256[](0)));
         ubeTokenAddress = _ubeTokenAddress;
     }
 
@@ -71,8 +79,7 @@ contract UbeGrants is Ownable {
             state: State.Pending,
             nextPayout: 0,
             totalAmount: totalGrantAmount,
-            milestoneAmounts: milestoneAmounts,
-            milestoneDeliveries: new string[](0)
+            milestoneAmounts: milestoneAmounts
         });
 
         require(newGrant.grantee != address(0), "Grant must have a grantee");
@@ -83,7 +90,7 @@ contract UbeGrants is Ownable {
     }
 
     function approveOrRejectGrant(uint256 _grantId, bool approve) external {
-        require(msg.sender == daoMultisig, "Only DAO multisig can approve grants");
+        require(msg.sender == daoMultisig, "Only DAO multisig can approve or reject grants");
         require(grants[_grantId].state == State.Pending, "Grant must be in pending state");
         Grant storage grant = grants[_grantId];
 
@@ -95,17 +102,25 @@ contract UbeGrants is Ownable {
             grant.state = State.Rejected;
         }
 
-        emit GrantState(_grantId, uint256(grant.state));
+        emit GrantStateChanged(_grantId, uint256(grant.state));
     }
 
     function cancelGrant(uint256 _grantId) external {
         Grant storage grant = grants[_grantId];
-        require(grant.grantee == msg.sender, "Only grantee can cancel grant");
+        require((daoMultisig == msg.sender || grant.grantee == msg.sender), "Only dao or grantee can cancel a grant");
         grant.state = State.Cancelled;
 
-        IERC20(ubeTokenAddress).safeTransfer(daoMultisig, grant.totalAmount);
+        uint256 amountToSend = grant.totalAmount;
+        if (grant.nextPayout > 0) {
+            for (uint256 i = 0; i < grant.nextPayout; i++) {
+                amountToSend -= grant.milestoneAmounts[i];
+            }
+        }
+        
+        IERC20(ubeTokenAddress).safeTransfer(daoMultisig, amountToSend);
 
-        emit GrantState(_grantId, uint256(grant.state));
+
+        emit GrantStateChanged(_grantId, uint256(grant.state));
     }
 
     function applyForGrantMilestone(uint256 grantId, string memory ipfsHash) external {
@@ -113,30 +128,41 @@ contract UbeGrants is Ownable {
         require(grant.grantee == msg.sender, "Only grantee can apply for complete milestones");
         require(grant.state == State.Active, "Grant must be active");
         require(grant.nextPayout < grant.milestoneAmounts.length, "All milestones have been completed");
-        
-        grant.milestoneDeliveries.push(ipfsHash);
+        require(grant.nextPayout == grantToMilestones[grantId].length, "Already applied for this milestone");
+
+        MilestoneDelivery memory milestone = MilestoneDelivery({
+            ipfsHash: ipfsHash,
+            amount: grant.milestoneAmounts[grant.nextPayout],
+            state: MilestoneStatus.Pending
+        });
+
+        grantToMilestones[grantId].push(milestone);
 
         emit GrantMilestoneApplied(grantId, grant.nextPayout, ipfsHash);
     }
 
-    function approveOrRejectMilestone(uint256 grantId, bool approve) external {
-        require(msg.sender == daoMultisig, "Only DAO multisig can approve milestones");
+    function approveOrRejectMilestone(uint256 grantId, uint256 milestoneId, bool approve) external {
+        require(msg.sender == daoMultisig, "Only DAO multisig can approve or reject milestones");
         Grant storage grant = grants[grantId];
         require(grant.state == State.Active, "Grant must be active");
         require(grant.nextPayout < grant.milestoneAmounts.length, "All milestones have been completed");
+        require(milestoneId == grant.nextPayout, "Cant approve or reject a future milestone");
         
         uint256 payout = grant.nextPayout;
         
         if (approve) {
             IERC20(ubeTokenAddress).safeTransfer(grant.grantee, grant.milestoneAmounts[payout]);
             grant.nextPayout++;
+            grantToMilestones[grantId][milestoneId].state = MilestoneStatus.Approved;
+        } else {
+            grantToMilestones[grantId][milestoneId].state = MilestoneStatus.Rejected;
         }
 
         if (grant.nextPayout == grant.milestoneAmounts.length) {
             grant.state = State.Completed;
         }
 
-        emit GrantMilestone(grantId, payout, grant.milestoneAmounts[payout], grant.milestoneDeliveries[grant.milestoneDeliveries.length - 1], approve);
+        emit GrantMilestoneStatus(grantId, milestoneId, grant.milestoneAmounts[payout], grantToMilestones[grantId][milestoneId].ipfsHash, approve);
     }
 
     function getGrant(uint256 grantId) external view returns (Grant memory) {
