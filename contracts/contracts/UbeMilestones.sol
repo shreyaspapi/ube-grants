@@ -16,8 +16,8 @@ contract UbeGrants is Ownable {
     // Events
     event GrantCreated(uint256 grantId, uint256[] milestoneAmounts, address creator, string ipfsHash);
     event GrantStateChanged(uint256 grantId, uint256 state);
-    event GrantMilestoneStatus(uint256 grantId, uint256 milestoneId, uint256 amount, string ipfsHash, bool approved);
     event GrantMilestoneApplied(uint256 grantId, uint256 milestoneId, string ipfsHash);
+    event GrantMilestoneStatus(uint256 grantId, uint256 milestoneId, uint256 amount, string ipfsHash, bool approved);
 
     // States
     // Pending - waiting for approval
