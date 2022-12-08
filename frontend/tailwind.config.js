@@ -55,5 +55,5 @@ module.exports = {
       ],
     },
   },
-  plugins: [require("flowbite-typography")],
+  plugins: [require("flowbite-typography"), require("@tailwindcss/typography")],
 };

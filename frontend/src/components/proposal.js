@@ -1,7 +1,9 @@
-import {getBadgeLabel, truncateWalletAddress} from "./utils"
+import { getBadgeLabel, truncateWalletAddress } from "./utils";
+import ReactMarkdown from "react-markdown";
+
 import proposalJSON from "../data/dummy.json";
 
-const data = proposalJSON[0]
+const data = proposalJSON[0];
 
 const Proposal = () => {
   return (
@@ -10,79 +12,75 @@ const Proposal = () => {
         <div className="flex justify-between px-4 mx-auto max-w-screen-xl">
           <article className="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
             <header className="mb-4 lg:mb-6 not-format">
-                <nav className="flex mb-4" aria-label="Breadcrumb">
-                  <ol className="inline-flex items-center space-x-1 md:space-x-3">
-                    <li className="inline-flex items-center">
-                      <a href="#" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                        <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                        Proposals
-                      </a>
-                    </li>
-                    <li>
-                      <div className="flex items-center">
-                        <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                        <a href="#" className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">0x8627639</a>
-                      </div>
-                    </li>
-                  </ol>
-                </nav>
-                <div className="mb-4">
-                  <span className="mr-4">{getBadgeLabel(data.status)}</span>      
-                  <span className="mr-4 font-normal text-lg text-gray-700 dark:text-gray-400 text-left">
-                    {truncateWalletAddress(data.id)}
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                      <time
-                        pubdate
-                        datetime="2022-02-08"
-                        title="February 8th, 2022"
-                      >
-                        Feb. 8, 2022
-                      </time>
-                    </span>
-                </div>
-              {/* <address className="flex items-center mb-6 not-italic">
-
-                <div className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
-                  <img
-                    className="mr-4 w-16 h-16 rounded-full"
-                    src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
-                    alt="Jese Leos"
-                  />
-                  <div>
-                    <p
-                      rel="author"
-                      className="text-xl font-bold text-gray-900 dark:text-white"
+              <nav className="flex mb-4" aria-label="Breadcrumb">
+                <ol className="inline-flex items-center space-x-1 md:space-x-3">
+                  <li className="inline-flex items-center">
+                    <a
+                      href="#"
+                      className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                     >
-                      Jese Leos
-                    </p>
-                    <p className="text-base font-light text-gray-500 dark:text-gray-400">
-                      Graphic Designer, educator & CEO Flowbite
-                    </p>
-                    <p className="text-base font-light text-gray-500 dark:text-gray-400">
-                      <time
-                        pubdate
-                        datetime="2022-02-08"
-                        title="February 8th, 2022"
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        Feb. 8, 2022
-                      </time>
-                    </p>
-                  </div>
-                </div>
-              </address> */}
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                      </svg>
+                      Proposals
+                    </a>
+                  </li>
+                  <li>
+                    <div className="flex items-center">
+                      <svg
+                        className="w-6 h-6 text-gray-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                      <a
+                        href="#"
+                        className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white"
+                      >
+                        0x8627639
+                      </a>
+                    </div>
+                  </li>
+                </ol>
+              </nav>
+              <div className="mb-4">
+                <span className="mr-4">{getBadgeLabel(data.status)}</span>
+                <span className="mr-4 font-normal text-lg text-gray-700 dark:text-gray-400 text-left">
+                  {truncateWalletAddress(data.id)}
+                </span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  <time
+                    pubdate
+                    datetime="2022-02-08"
+                    title="February 8th, 2022"
+                  >
+                    Feb. 8, 2022
+                  </time>
+                </span>
+              </div>
+
               <h1 className="mb-4 text-2xl font-extrabold leading-tight text-gray-900 lg:mb-6 lg:text-3xl dark:text-white">
                 {data.proposalTitle}
               </h1>
             </header>
-            
-            <p className="text-2xl font-semibold">
-              Proposal Details
-            </p>
-            <p className="text-md ">
+
+            <p className="text-2xl font-semibold">Proposal Details</p>
+            <p className="text-md prose lg:prose-xl">
               {data.proposalDescriptions}
             </p>
-            
+
+            <ReactMarkdown></ReactMarkdown>
 
             <section className="not-format">
               <div className="flex justify-between items-center mb-6">
@@ -90,28 +88,43 @@ const Proposal = () => {
                   Milestones (6000 UBE)
                 </h2>
               </div>
+
+              <div className="flex justify-between items-baseline mb-4">
                 <h2 className="mb-2 text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
                   Milestone 1 (2000 UBE)
                 </h2>
-                <p className="text-md mb-8">
-                  Rather than select a winner themselves, the Meta-Governance Working Group Stewards believe that the selection of a fund manager should be put to the DAO. This EP implements a Snapshot vote using Ranked Choice voting with the following options:
-                </p>
-                
-                <h2 className="mb-2 text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                  Milestone 2 (2000 UBE)
-                </h2>
-                <p className="text-md mb-8">
-                  Rather than select a winner themselves, the Meta-Governance Working Group Stewards believe that the selection of a fund manager should be put to the DAO. This EP implements a Snapshot vote using Ranked Choice voting with the following options:
-                </p>
+                <span className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-500 cursor-pointer">
+                  Delete
+                </span>
+              </div>
 
-                <h2 className="mb-2 text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                  Milestone 3 (2000 UBE)
-                </h2>
-                <p className="text-md mb-8">
-                  Rather than select a winner themselves, the Meta-Governance Working Group Stewards believe that the selection of a fund manager should be put to the DAO. This EP implements a Snapshot vote using Ranked Choice voting with the following options:
-                </p>
-            
-             
+              <p className="text-md mb-8">
+                Rather than select a winner themselves, the Meta-Governance
+                Working Group Stewards believe that the selection of a fund
+                manager should be put to the DAO. This EP implements a Snapshot
+                vote using Ranked Choice voting with the following options:
+              </p>
+
+              <h2 className="mb-2 text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
+                Milestone 2 (2000 UBE)
+              </h2>
+              <p className="text-md mb-8">
+                Rather than select a winner themselves, the Meta-Governance
+                Working Group Stewards believe that the selection of a fund
+                manager should be put to the DAO. This EP implements a Snapshot
+                vote using Ranked Choice voting with the following options:
+              </p>
+
+              <h2 className="mb-2 text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
+                Milestone 3 (2000 UBE)
+              </h2>
+              <p className="text-md mb-8">
+                Rather than select a winner themselves, the Meta-Governance
+                Working Group Stewards believe that the selection of a fund
+                manager should be put to the DAO. This EP implements a Snapshot
+                vote using Ranked Choice voting with the following options:
+              </p>
+
               <article className="p-6 mb-6 text-base bg-white rounded-lg dark:bg-gray-900">
                 <footer className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
@@ -121,7 +134,8 @@ const Proposal = () => {
                         src="https://flowbite.com/docs/images/people/profile-picture-2.jpg"
                         alt="Michael Gough"
                       />
-                      Grantee &nbsp; &nbsp; <span>{truncateWalletAddress(data.id)}</span>
+                      Grantee &nbsp; &nbsp;{" "}
+                      <span>{truncateWalletAddress(data.id)}</span>
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       <time
@@ -187,9 +201,11 @@ const Proposal = () => {
                   </div>
                 </footer>
                 <p>
-                  Status: Pending
-                  Rather than select a winner themselves, the Meta-Governance Working Group Stewards believe that the selection of a fund manager should be put to the DAO. This EP implements a Snapshot vote using Ranked Choice voting with the following options:
-
+                  Status: Pending Rather than select a winner themselves, the
+                  Meta-Governance Working Group Stewards believe that the
+                  selection of a fund manager should be put to the DAO. This EP
+                  implements a Snapshot vote using Ranked Choice voting with the
+                  following options:
                 </p>
                 <div className="flex items-center mt-4 space-x-4">
                   <button
