@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 
 import { store } from "../store/store";
 import ReactMarkdown from "react-markdown";
@@ -88,6 +88,7 @@ const ProposalForm = () => {
 
   const [proposalTitle, setProposalTitle] = useState("Dummy Title");
   const [description, setDescription] = useState("Dummy Description");
+  const [totalGrantAmount, setTotalGrantAmount] = useState(0);
   const [allMilestoneDetails, setMilestoneDetails] = useState([
     {
       description: "",
@@ -95,6 +96,15 @@ const ProposalForm = () => {
       milestoneKey: 0,
     },
   ]);
+
+  useEffect(() => {
+    let currentTotalGrantAmount = 0
+    allMilestoneDetails.forEach(milestone => {
+      currentTotalGrantAmount += milestone.amount
+    })
+    setTotalGrantAmount(currentTotalGrantAmount)
+
+  }, [allMilestoneDetails])
 
   // useEffect(() => {
   //   const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
@@ -186,130 +196,159 @@ const ProposalForm = () => {
 
   return (
     <section className="bg-white dark:bg-gray-900">
-      <div className="py-8 px-4 mx-auto max-w-2xl lg:py-16">
-        <nav className="flex mb-4" aria-label="Breadcrumb">
-          <ol className="inline-flex items-center space-x-1 md:space-x-3">
-            <li className="inline-flex items-center">
-              <div className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
-                </svg>
-                Proposals
-              </div>
-            </li>
-            <li>
-              <div className="flex items-center">
-                <svg
-                  className="w-6 h-6 text-gray-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clip-rule="evenodd"
-                  ></path>
-                </svg>
-                <div className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">
-                  New Proposal
+      {/* left right div */}
+      <div className="flex flex-col lg:flex-row mx-auto max-w-7xl">
+        <div className="flex flex-col flex-1">
+          <div className="py-8 px-4 max-w-2xl lg:py-16">
+            <nav className="flex mb-4" aria-label="Breadcrumb">
+              <ol className="inline-flex items-center space-x-1 md:space-x-3">
+                <li className="inline-flex items-center">
+                  <div className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                    </svg>
+                    Proposals
+                  </div>
+                </li>
+                <li>
+                  <div className="flex items-center">
+                    <svg
+                      className="w-6 h-6 text-gray-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                    <div className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">
+                      New Proposal
+                    </div>
+                  </div>
+                </li>
+              </ol>
+            </nav>
+            <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
+              Add a new proposal
+            </h2>
+            <form onSubmit={submitProposal}>
+              <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="name"
+                    className="block mb-2 text-left text-sm font-medium text-gray-900 dark:text-white"
+                  >
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="Add Title"
+                    value={proposalTitle}
+                    onChange={(e) => setProposalTitle(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="mb-4 sm:col-span-2 whitespace-pre-line">
+                  <label
+                    htmlFor="description"
+                    className="block mb-2 text-sm text-left font-medium text-gray-900 dark:text-white"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    rows="8"
+                    className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                    placeholder="Your description here"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  ></textarea>
                 </div>
               </div>
-            </li>
-          </ol>
-        </nav>
-        <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
-          Add a new proposal
-        </h2>
-        <form onSubmit={submitProposal}>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="name"
-                className="block mb-2 text-left text-sm font-medium text-gray-900 dark:text-white"
-              >
-                Title
-              </label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                placeholder="Add Title"
-                value={proposalTitle}
-                onChange={(e) => setProposalTitle(e.target.value)}
-                required
-              />
-            </div>
+              {allMilestoneDetails.map((milestone, key) => (
+                <NewMilestone
+                  key={key}
+                  milestoneIndex={key}
+                  milestone={milestone}
+                  onDeleteHandler={onDeleteMilestone}
+                  changeMilestoneDescription={changeMilestoneDescription}
+                  changeMilestonePrice={changeMilestonePrice}
+                />
+              ))}
 
-            <div className="mb-4 sm:col-span-2 whitespace-pre-line">
-              <label
-                htmlFor="description"
-                className="block mb-2 text-sm text-left font-medium text-gray-900 dark:text-white"
-              >
-                Description
-              </label>
-              <textarea
-                id="description"
-                rows="8"
-                className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                placeholder="Your description here"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              ></textarea>
+              {/* Add a text button to add newmilestones and submit button with flex column */}
+              <div className="flex flex-col">
+                <div className="flex flex-col items-end">
+                <button
+
+                  type="button"
+                  // Button to add new milestones only text with no background and color blue
+                  className="inline-flex items-center px-5 mt-4 sm:mt-6 text-sm font-medium text-center text-blue-700 bg-transparent dark:focus:ring-primary-900"
+                  onClick={onAddMilestone}
+                >
+                  Add Milestone
+                </button>
+                </div>
+
+                <div className="flex flex-col items-center">
+
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
+                >
+                  Submit Proposal
+                </button>    
+                </div>            
+              </div>
+            </form>
+          </div>
+        </div>
+        {/* Add a small preview window which shows markdown with 100% height*/}
+        <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto mt-8 text-left">
+          <div className="box border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 overflow-y-auto max-h-screen h-5/6">
+            <div className="rounded-lg p-4">
+              <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
+                Preview
+              </h2>
+              <div className="prose lg:prose-xl">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  <ReactMarkdown>{proposalTitle}</ReactMarkdown>
+                </h3>
+                <ReactMarkdown>{description}</ReactMarkdown>
+                
+                {/*  Calculate and show total grant amount */}
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Total Amount - ( { totalGrantAmount } UBE )
+                </h3>
+                {/*  Show all milestones */}
+                {allMilestoneDetails.map((milestone, key) => (
+                  <div key={key}>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Milestone {key + 1} - ( {milestone.amount} UBE )
+                    </h3>
+                    <p className="text-gray-900 dark:text-white">
+                      {milestone.description}
+                    </p>
+                  </div>
+                ))}
+              
+              </div>
+              </div>
             </div>
           </div>
-          {allMilestoneDetails.map((milestone, key) => (
-            <NewMilestone
-              key={key}
-              milestoneIndex={key}
-              milestone={milestone}
-              onDeleteHandler={onDeleteMilestone}
-              changeMilestoneDescription={changeMilestoneDescription}
-              changeMilestonePrice={changeMilestonePrice}
-            />
-          ))}
-
-          {/* <ReactMarkdown>{description}</ReactMarkdown> */}
-
-          {/* <p className="prose lg:prose-xl">
-            <ReactMarkdown>{description}</ReactMarkdown>
-          </p> */}
-
-          <button
-            type="button"
-            className="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center mr-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:focus:ring-blue-800"
-            onClick={() => onAddMilestone()}
-          >
-            <svg
-              aria-hidden="true"
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-            <span className="sr-only">Icon description</span>
-          </button>
-
-          <button
-            type="submit"
-            className="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
-          >
-            Submit Proposal
-          </button>
-        </form>
       </div>
     </section>
   );
