@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {truncateWalletAddress, getBadgeLabel} from "./utils"
+import { truncateWalletAddress, getBadgeLabel } from "./utils";
 import proposalJSON from "../data/dummy.json";
 
 const truncateDescription = (str) => {
@@ -11,7 +11,7 @@ const truncateDescription = (str) => {
   return str.slice(0, 143) + "...";
 };
 
-const CardsList = () => {
+const AllProposal = () => {
   const [allProposals, setAllProposals] = useState([]);
 
   useEffect(() => {
@@ -63,16 +63,18 @@ const CardsList = () => {
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="py-8 px-4 mx-auto max-w-screen-xl text-left lg:py-16 lg:px-12">
-
         <div className="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 xl:px-48 dark:text-gray-400">
-          <div class="grid grid-flow-row-dense grid-cols-2">
+          <div className="grid grid-flow-row-dense grid-cols-2">
             <h1 className="mb-8 text-2xl font-semibold tracking-tight leading-none text-gray-900 md:text-3xl lg:text-3xl dark:text-white">
               Proposals
             </h1>
-            
+
             <div className="flex justify-end mb-4">
-              <select id="countries" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-md p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                <option selected>All</option>
+              <select
+                id="countries"
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-md p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              >
+                <option defaultValue>All</option>
                 <option value="CA">Pending</option>
                 <option value="FR">Active</option>
                 <option value="DE">Completed</option>
@@ -108,4 +110,4 @@ const CardsList = () => {
   );
 };
 
-export default CardsList;
+export default AllProposal;

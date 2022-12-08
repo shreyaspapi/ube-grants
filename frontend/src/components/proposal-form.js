@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
-// import { create } from 'ipfs-http-client'
-import * as IPFS from 'ipfs-core'
-// import axios from 'axios'
+import { useState, useContext } from "react";
 
+import { store } from "../store/store";
 import ReactMarkdown from "react-markdown";
 
 const NewMilestone = ({
@@ -85,6 +83,9 @@ const NewMilestone = ({
 };
 
 const ProposalForm = () => {
+  const globalState = useContext(store);
+  const { ipfsClient } = globalState.state;
+
   const [proposalTitle, setProposalTitle] = useState("Dummy Title");
   const [description, setDescription] = useState("Dummy Description");
   const [allMilestoneDetails, setMilestoneDetails] = useState([
@@ -95,34 +96,34 @@ const ProposalForm = () => {
     },
   ]);
 
-  useEffect(() => {
-    const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
-      return {
-        description: `Milestone ${value}`,
-        amount: value * 10,
-        milestoneKey: value,
-      };
-    });
-    setMilestoneDetails(dummyMilestone);
-  }, []);
+  // useEffect(() => {
+  //   const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
+  //     return {
+  //       description: `Milestone ${value}`,
+  //       amount: value * 10,
+  //       milestoneKey: value,
+  //     };
+  //   });
+  //   setMilestoneDetails(dummyMilestone);
+  // }, []);
 
   const addProposalToIPFS = async (formData) => {
-    const ipfs = await IPFS.create()
+    if (!ipfsClient) return;
 
-    const { cid } = await ipfs.add(JSON.stringify(formData))
-    console.info(cid.toString())
+    const { cid } = await ipfsClient.add(JSON.stringify(formData));
+    console.info(cid.toString());
 
-    const stream = ipfs.cat(cid.toString())
-    const decoder = new TextDecoder()
-    let data = ''
+    const stream = ipfsClient.cat(cid.toString());
+    const decoder = new TextDecoder();
+    let data = "";
 
     for await (const chunk of stream) {
       // chunks of data are returned as a Uint8Array, convert it back to a string
-      data += decoder.decode(chunk, { stream: true })
+      data += decoder.decode(chunk, { stream: true });
     }
 
-    console.log(data)
-  }
+    console.log(data);
+  };
 
   const changeMilestoneDescription = (milestoneIndex, newDescription) => {
     if (typeof allMilestoneDetails[milestoneIndex] === "undefined") {
@@ -180,13 +181,49 @@ const ProposalForm = () => {
       milestones: allMilestoneDetails,
     };
     console.log("proposalForm: ", proposalForm);
-    await addProposalToIPFS(proposalForm)
+    await addProposalToIPFS(proposalForm);
   };
 
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="py-8 px-4 mx-auto max-w-2xl lg:py-16">
-        <h2 className="mb-4 text-xl text-left font-bold text-gray-900 dark:text-white">
+        <nav className="flex mb-4" aria-label="Breadcrumb">
+          <ol className="inline-flex items-center space-x-1 md:space-x-3">
+            <li className="inline-flex items-center">
+              <div className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path>
+                </svg>
+                Proposals
+              </div>
+            </li>
+            <li>
+              <div className="flex items-center">
+                <svg
+                  className="w-6 h-6 text-gray-400"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                <div className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">
+                  New Proposal
+                </div>
+              </div>
+            </li>
+          </ol>
+        </nav>
+        <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
           Add a new proposal
         </h2>
         <form onSubmit={submitProposal}>
