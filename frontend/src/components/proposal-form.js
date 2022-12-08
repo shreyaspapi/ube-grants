@@ -1,4 +1,7 @@
 import { useState, useEffect } from "react";
+// import { create } from 'ipfs-http-client'
+import * as IPFS from 'ipfs-core'
+// import axios from 'axios'
 
 import ReactMarkdown from "react-markdown";
 
@@ -31,9 +34,9 @@ const NewMilestone = ({
             <div className="sm:col-span-2 whitespace-pre-line">
               <label
                 htmlFor="description"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                className="block mb-2 text-left text-sm font-medium text-gray-900 dark:text-white"
               >
-                Milestone {milestoneIndex + 1} Description
+                Description
               </label>
               <textarea
                 id="description"
@@ -52,13 +55,13 @@ const NewMilestone = ({
             <div>
               <label
                 htmlFor="visitors"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-left font-medium text-gray-900 dark:text-white"
               >
-                Milestone {milestoneKey + 1} Price
+                Amount
               </label>
               <div className="flex">
                 <span className="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-600">
-                  $
+                  UBE
                 </span>
                 <input
                   type="number"
@@ -82,27 +85,44 @@ const NewMilestone = ({
 };
 
 const ProposalForm = () => {
-  const [proposalTitle, setProposalTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [proposalTitle, setProposalTitle] = useState("Dummy Title");
+  const [description, setDescription] = useState("Dummy Description");
   const [allMilestoneDetails, setMilestoneDetails] = useState([
     {
       description: "",
-      amount: 0,
+      amount: 1,
       milestoneKey: 0,
     },
   ]);
 
   useEffect(() => {
-    const dummyMilestone = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => {
+    const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
       return {
         description: `Milestone ${value}`,
         amount: value * 10,
         milestoneKey: value,
       };
     });
-    console.log("dummyMilestone: ", dummyMilestone);
     setMilestoneDetails(dummyMilestone);
   }, []);
+
+  const addProposalToIPFS = async (formData) => {
+    const ipfs = await IPFS.create()
+
+    const { cid } = await ipfs.add(JSON.stringify(formData))
+    console.info(cid.toString())
+
+    const stream = ipfs.cat(cid.toString())
+    const decoder = new TextDecoder()
+    let data = ''
+
+    for await (const chunk of stream) {
+      // chunks of data are returned as a Uint8Array, convert it back to a string
+      data += decoder.decode(chunk, { stream: true })
+    }
+
+    console.log(data)
+  }
 
   const changeMilestoneDescription = (milestoneIndex, newDescription) => {
     if (typeof allMilestoneDetails[milestoneIndex] === "undefined") {
@@ -140,19 +160,18 @@ const ProposalForm = () => {
       {
         milestoneKey: milestoneKey,
         description: "",
-        amount: 0,
+        amount: 1,
       },
     ]);
   };
 
   const onDeleteMilestone = (removeIndex) => {
-    const newMilestones = allMilestoneDetails.filter(
-      (milestone) => milestone.milestoneKey !== removeIndex
-    );
-    setMilestoneDetails(newMilestones);
+    const newMilestone = [...allMilestoneDetails];
+    newMilestone.splice(removeIndex, 1);
+    setMilestoneDetails(newMilestone);
   };
 
-  const submitProposal = (e) => {
+  const submitProposal = async (e) => {
     e.preventDefault();
 
     const proposalForm = {
@@ -161,12 +180,13 @@ const ProposalForm = () => {
       milestones: allMilestoneDetails,
     };
     console.log("proposalForm: ", proposalForm);
+    await addProposalToIPFS(proposalForm)
   };
 
   return (
     <section className="bg-white dark:bg-gray-900">
       <div className="py-8 px-4 mx-auto max-w-2xl lg:py-16">
-        <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">
+        <h2 className="mb-4 text-xl text-left font-bold text-gray-900 dark:text-white">
           Add a new proposal
         </h2>
         <form onSubmit={submitProposal}>
@@ -174,7 +194,7 @@ const ProposalForm = () => {
             <div className="sm:col-span-2">
               <label
                 htmlFor="name"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                className="block mb-2 text-left text-sm font-medium text-gray-900 dark:text-white"
               >
                 Title
               </label>
@@ -193,7 +213,7 @@ const ProposalForm = () => {
             <div className="mb-4 sm:col-span-2 whitespace-pre-line">
               <label
                 htmlFor="description"
-                className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                className="block mb-2 text-sm text-left font-medium text-gray-900 dark:text-white"
               >
                 Description
               </label>
