@@ -8,7 +8,7 @@
   {
     "id": "0xf90dC46f86c3F78de24408014396843359812044",
     "proposalTitle": "Noteworthy technology acquisitions 2021",
-    "proposalDescriptions": "Here are the biggest enterprise technology acquisitions of 2021 so far, in reverse chronological order.",
+    "proposalDescriptions": "## this is working ### this is second heading > Text that is a quote Some basic Git commands are: ``` git status git add git commit ```",
     "status": "Active"
   },
   {
