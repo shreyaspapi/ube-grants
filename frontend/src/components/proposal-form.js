@@ -1,7 +1,9 @@
 import { useState, useContext, useEffect } from "react";
+import { useContract, useSigner } from 'wagmi'
+import ReactMarkdown from "react-markdown";
 
 import { store } from "../store/store";
-import ReactMarkdown from "react-markdown";
+import {UBE_CONTRACT_ADDRESS, ABI_JSON} from "../utils/getContract";
 
 const dummyMarkDownDescription =
   "# A demo of `nemo`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n";
@@ -132,6 +134,15 @@ const ProposalForm = () => {
   const globalState = useContext(store);
   const { ipfsClient } = globalState.state;
 
+  // wagmi
+  const { data: signer, isError, isLoading } = useSigner()
+
+  const contract = useContract({
+    address: UBE_CONTRACT_ADDRESS,
+    abi: ABI_JSON,
+    signerOrProvider: signer,
+  })
+
   const [proposalTitle, setProposalTitle] = useState("");
   const [description, setDescription] = useState("");
   const [totalGrantAmount, setTotalGrantAmount] = useState(0);
@@ -166,19 +177,25 @@ const ProposalForm = () => {
     if (!ipfsClient) return;
 
     const { cid } = await ipfsClient.add(JSON.stringify(formData));
-    console.info(cid.toString());
+    return cid.toString()
+    // console.info(cid.toString());
 
-    const stream = ipfsClient.cat(cid.toString());
-    const decoder = new TextDecoder();
-    let data = "";
+    // const stream = ipfsClient.cat(cid.toString());
+    // const decoder = new TextDecoder();
+    // let data = "";
 
-    for await (const chunk of stream) {
-      // chunks of data are returned as a Uint8Array, convert it back to a string
-      data += decoder.decode(chunk, { stream: true });
-    }
+    // for await (const chunk of stream) {
+    //   // chunks of data are returned as a Uint8Array, convert it back to a string
+    //   data += decoder.decode(chunk, { stream: true });
+    // }
 
-    console.log(data);
+    // console.log(data);
   };
+
+  const saveIpfsToContact = async (ipfsHash, milestoneAmounts) => {
+    const tx = await contract.functions.applyForGrant(ipfsHash, [10,20,30,40, 50]);
+    console.log("tx",tx)
+  }
 
   const changeMilestoneDescription = (milestoneIndex, newDescription) => {
     if (typeof allMilestoneDetails[milestoneIndex] === "undefined") {
@@ -236,7 +253,9 @@ const ProposalForm = () => {
       milestones: allMilestoneDetails,
     };
     console.log("proposalForm: ", proposalForm);
-    await addProposalToIPFS(proposalForm);
+    const ipfsHash = await addProposalToIPFS(proposalForm);
+    console.log("ipfsHash", ipfsHash)
+    saveIpfsToContact(ipfsHash)
   };
 
   return (
