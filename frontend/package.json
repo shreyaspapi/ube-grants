@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@web3modal/ethereum": "^2.0.0-beta.8",
+    "@web3modal/react": "^2.0.0-beta.8",
     "axios": "^1.2.1",
+    "ethers": "^5.7.2",
     "ipfs-core": "^0.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-markdown": "^8.0.4",
     "react-router-dom": "^6.4.3",
     "react-scripts": "5.0.1",
+    "wagmi": "^0.8.10",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
