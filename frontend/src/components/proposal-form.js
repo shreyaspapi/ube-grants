@@ -3,6 +3,9 @@ import { useState, useContext, useEffect } from "react";
 import { store } from "../store/store";
 import ReactMarkdown from "react-markdown";
 
+const dummyMarkDownDescription =
+  "# A demo of `nemo`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n";
+
 const NewMilestone = ({
   onDeleteHandler,
   milestoneIndex,
@@ -82,12 +85,55 @@ const NewMilestone = ({
   );
 };
 
+const PreviewMilestone = ({
+  proposalTitle,
+  description,
+  totalGrantAmount,
+  allMilestoneDetails,
+}) => {
+  return (
+    <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto mt-8 text-left">
+      <div className="box border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 overflow-y-auto max-h-screen h-5/6">
+        <div className="rounded-lg p-4">
+          <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
+            Preview
+          </h2>
+          <div className="prose lg:prose-xl">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              <ReactMarkdown>{proposalTitle}</ReactMarkdown>
+            </h3>
+            <ReactMarkdown>
+              {description || dummyMarkDownDescription}
+            </ReactMarkdown>
+
+            {/*  Calculate and show total grant amount */}
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+              Total Amount - ( {totalGrantAmount} UBE )
+            </h3>
+            {/*  Show all milestones */}
+            {allMilestoneDetails.map((milestone, key) => (
+              <div key={key}>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Milestone {key + 1} - ( {milestone.amount} UBE )
+                </h3>
+                <p className="text-gray-900 dark:text-white">
+                  {milestone.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProposalForm = () => {
   const globalState = useContext(store);
   const { ipfsClient } = globalState.state;
 
-  const [proposalTitle, setProposalTitle] = useState("Dummy Title");
-  const [description, setDescription] = useState("Dummy Description");
+  const [proposalTitle, setProposalTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [totalGrantAmount, setTotalGrantAmount] = useState(0);
   const [allMilestoneDetails, setMilestoneDetails] = useState([
     {
@@ -98,13 +144,12 @@ const ProposalForm = () => {
   ]);
 
   useEffect(() => {
-    let currentTotalGrantAmount = 0
-    allMilestoneDetails.forEach(milestone => {
-      currentTotalGrantAmount += milestone.amount
-    })
-    setTotalGrantAmount(currentTotalGrantAmount)
-
-  }, [allMilestoneDetails])
+    let currentTotalGrantAmount = 0;
+    allMilestoneDetails.forEach((milestone) => {
+      currentTotalGrantAmount += milestone.amount;
+    });
+    setTotalGrantAmount(currentTotalGrantAmount);
+  }, [allMilestoneDetails]);
 
   // useEffect(() => {
   //   const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
@@ -272,7 +317,7 @@ const ProposalForm = () => {
                     rows="8"
                     className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                     placeholder="Your description here"
-                    value={description}
+                    value={description || dummyMarkDownDescription}
                     onChange={(e) => setDescription(e.target.value)}
                     required
                   ></textarea>
@@ -292,63 +337,34 @@ const ProposalForm = () => {
               {/* Add a text button to add newmilestones and submit button with flex column */}
               <div className="flex flex-col">
                 <div className="flex flex-col items-end">
-                <button
-
-                  type="button"
-                  // Button to add new milestones only text with no background and color blue
-                  className="inline-flex items-center px-5 mt-4 sm:mt-6 text-sm font-medium text-center text-blue-700 bg-transparent dark:focus:ring-primary-900"
-                  onClick={onAddMilestone}
-                >
-                  Add Milestone
-                </button>
+                  <button
+                    type="button"
+                    // Button to add new milestones only text with no background and color blue
+                    className="inline-flex items-center px-5 mt-4 sm:mt-6 text-sm font-medium text-center text-blue-700 bg-transparent dark:focus:ring-primary-900"
+                    onClick={onAddMilestone}
+                  >
+                    Add Milestone
+                  </button>
                 </div>
 
                 <div className="flex flex-col items-center">
-
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
-                >
-                  Submit Proposal
-                </button>    
-                </div>            
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
+                  >
+                    Submit Proposal
+                  </button>
+                </div>
               </div>
             </form>
           </div>
         </div>
-        {/* Add a small preview window which shows markdown with 100% height*/}
-        <div className="flex flex-col flex-1 w-full max-w-2xl mx-auto mt-8 text-left">
-          <div className="box border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 overflow-y-auto max-h-screen h-5/6">
-            <div className="rounded-lg p-4">
-              <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
-                Preview
-              </h2>
-              <div className="prose lg:prose-xl">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  <ReactMarkdown>{proposalTitle}</ReactMarkdown>
-                </h3>
-                <ReactMarkdown>{description}</ReactMarkdown>
-                
-                {/*  Calculate and show total grant amount */}
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                  Total Amount - ( { totalGrantAmount } UBE )
-                </h3>
-                {/*  Show all milestones */}
-                {allMilestoneDetails.map((milestone, key) => (
-                  <div key={key}>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                      Milestone {key + 1} - ( {milestone.amount} UBE )
-                    </h3>
-                    <p className="text-gray-900 dark:text-white">
-                      {milestone.description}
-                    </p>
-                  </div>
-                ))}
-              
-              </div>
-              </div>
-            </div>
-          </div>
+        <PreviewMilestone
+          proposalTitle={proposalTitle}
+          description={description}
+          totalGrantAmount={totalGrantAmount}
+          allMilestoneDetails={allMilestoneDetails}
+        />
       </div>
     </section>
   );
