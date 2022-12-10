@@ -1,3 +1,0 @@
-{
-  "description": "# A demo of `react-markdown`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n"
-}

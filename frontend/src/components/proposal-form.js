@@ -1,14 +1,21 @@
 import { useState, useContext, useEffect } from "react";
-import { useContract, useSigner } from 'wagmi'
+import {
+  useContract,
+  useSigner,
+  useAccount,
+  useConnect,
+  useWaitForTransaction,
+} from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
 import ReactMarkdown from "react-markdown";
 
 import { store } from "../store/store";
-import {UBE_CONTRACT_ADDRESS, ABI_JSON} from "../utils/getContract";
+import { UBE_CONTRACT_ADDRESS, ABI_JSON } from "../utils/getContract";
 
 const dummyMarkDownDescription =
   "# A demo of `nemo`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n";
 
-const NewMilestone = ({
+const AddNewMilestone = ({
   onDeleteHandler,
   milestoneIndex,
   milestone,
@@ -130,21 +137,45 @@ const PreviewMilestone = ({
   );
 };
 
+const WaitForTransaction = ({ txHash }) => {
+  const { data, isError, isFetching } = useWaitForTransaction({
+    hash: txHash,
+  });
+
+  if (isFetching)
+    return (
+      <div className="text-green-500 mt-2">
+        Waiting for transaction to be mined...
+      </div>
+    );
+  if (isError)
+    return (
+      <div className="text-red-500 mt-2">
+        Some thing went wrong. Please try again later.
+      </div>
+    );
+  return <div>Transaction: {JSON.stringify(data)}</div>;
+};
+
 const ProposalForm = () => {
   const globalState = useContext(store);
   const { ipfsClient } = globalState.state;
 
   // wagmi
-  const { data: signer, isError, isLoading } = useSigner()
-
+  const { data: signer } = useSigner();
+  let { isConnected } = useAccount();
+  const { connect } = useConnect({
+    connector: new InjectedConnector(),
+  });
   const contract = useContract({
     address: UBE_CONTRACT_ADDRESS,
     abi: ABI_JSON,
     signerOrProvider: signer,
-  })
+  });
 
   const [proposalTitle, setProposalTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [currentTxHash, setCurrentTxHash] = useState(null);
   const [totalGrantAmount, setTotalGrantAmount] = useState(0);
   const [allMilestoneDetails, setMilestoneDetails] = useState([
     {
@@ -162,22 +193,11 @@ const ProposalForm = () => {
     setTotalGrantAmount(currentTotalGrantAmount);
   }, [allMilestoneDetails]);
 
-  // useEffect(() => {
-  //   const dummyMilestone = [1, 2, 3, 4, 5].map((value) => {
-  //     return {
-  //       description: `Milestone ${value}`,
-  //       amount: value * 10,
-  //       milestoneKey: value,
-  //     };
-  //   });
-  //   setMilestoneDetails(dummyMilestone);
-  // }, []);
-
   const addProposalToIPFS = async (formData) => {
     if (!ipfsClient) return;
 
     const { cid } = await ipfsClient.add(JSON.stringify(formData));
-    return cid.toString()
+    return cid.toString();
     // console.info(cid.toString());
 
     // const stream = ipfsClient.cat(cid.toString());
@@ -192,10 +212,14 @@ const ProposalForm = () => {
     // console.log(data);
   };
 
-  const saveIpfsToContact = async (ipfsHash, milestoneAmounts) => {
-    const tx = await contract.functions.applyForGrant(ipfsHash, [10,20,30,40, 50]);
-    console.log("tx",tx)
-  }
+  const submitMilestoneToContract = async (ipfsHash, milestoneAmounts) => {
+    const tx = await contract.functions.applyForGrant(
+      ipfsHash,
+      milestoneAmounts
+    );
+
+    return tx;
+  };
 
   const changeMilestoneDescription = (milestoneIndex, newDescription) => {
     if (typeof allMilestoneDetails[milestoneIndex] === "undefined") {
@@ -254,9 +278,19 @@ const ProposalForm = () => {
     };
     console.log("proposalForm: ", proposalForm);
     const ipfsHash = await addProposalToIPFS(proposalForm);
-    console.log("ipfsHash", ipfsHash)
-    saveIpfsToContact(ipfsHash)
+    console.log("ipfsHash", ipfsHash);
+
+    const milestoneAmounts = allMilestoneDetails.map(
+      (milestone) => milestone.amount
+    );
+    console.log("allMilestoneAmounts: ", milestoneAmounts);
+
+    // if (!ipfsHash || milestoneAmounts.length < 1) return;
+    // const tx = submitMilestoneToContract(ipfsHash, milestoneAmounts);
+    // setCurrentTxHash(tx.hash);
   };
+
+  isConnected = true;
 
   return (
     <section className="bg-white dark:bg-gray-900">
@@ -288,9 +322,9 @@ const ProposalForm = () => {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                         d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clip-rule="evenodd"
+                        clipRule="evenodd"
                       ></path>
                     </svg>
                     <div className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">
@@ -303,6 +337,7 @@ const ProposalForm = () => {
             <h2 className="mb-4 text-2xl text-left font-bold text-gray-900 dark:text-white">
               Add a new proposal
             </h2>
+
             <form onSubmit={submitProposal}>
               <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
                 <div className="sm:col-span-2">
@@ -343,7 +378,7 @@ const ProposalForm = () => {
                 </div>
               </div>
               {allMilestoneDetails.map((milestone, key) => (
-                <NewMilestone
+                <AddNewMilestone
                   key={key}
                   milestoneIndex={key}
                   milestone={milestone}
@@ -369,11 +404,31 @@ const ProposalForm = () => {
                 <div className="flex flex-col items-center">
                   <button
                     type="submit"
-                    className="inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
+                    className={
+                      !isConnected
+                        ? "inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white cursor-not-allowed opacity-50 bg-gray-300"
+                        : "inline-flex items-center px-5 py-2.5 mt-4 sm:mt-6 text-sm font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
+                    }
+                    disabled={!isConnected}
                   >
                     Submit Proposal
                   </button>
                 </div>
+
+                {!isConnected && (
+                  <div className="pt-4 flex flex-col items-center">
+                    <button
+                      type="button"
+                      // Button to add new milestones only text with no background and color blue
+                      className="text-sm text-center text-gray-500 dark:text-gray-400"
+                      onClick={() => connect()}
+                    >
+                      Click here to connect your wallet to submit proposal
+                    </button>
+                  </div>
+                )}
+
+                {currentTxHash && <WaitForTransaction txHash={currentTxHash} />}
               </div>
             </form>
           </div>

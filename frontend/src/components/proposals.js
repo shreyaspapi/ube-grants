@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
 
+import { store } from "../store/store";
 import { truncateWalletAddress, getBadgeLabel } from "./utils";
 import proposalJSON from "../data/dummy.json";
 
@@ -11,12 +13,94 @@ const truncateDescription = (str) => {
   return str.slice(0, 143) + "...";
 };
 
+// Replace with the actual API endpoint you want to call
+const API_ENDPOINT =
+  "https://api.thegraph.com/subgraphs/name/shreyaspapi/ubegrants";
+
+// Set the parameters for the request
+const graphQuery = `
+    {
+      grants(first: 5) {
+        id
+        grantId
+        state
+        ipfs
+        grantee
+      }
+    }
+  `;
+
+const appoloClient = new ApolloClient({
+  uri: API_ENDPOINT,
+  cache: new InMemoryCache(),
+});
+
 const AllProposal = () => {
+  const globalState = useContext(store);
+  const { ipfsClient } = globalState.state;
+  console.log("ipfsClient: ", ipfsClient);
+
   const [allProposals, setAllProposals] = useState([]);
 
   useEffect(() => {
     setAllProposals(proposalJSON);
   }, []);
+
+  useEffect(() => {
+    const fetchIPFSData = async () => {
+      if (!ipfsClient) return;
+
+      const graph = await appoloClient.query({
+        query: gql(graphQuery),
+      });
+
+      graph.data.grants.forEach(async (grant) => {
+        console.log("grant", grant);
+        const ipfsHash = grant.ipfs;
+
+        // const stream = ipfsClient.cat(
+        //   "QmPChd2hVbrJ6bfo3WBcTW4iZnpHm8TEzWkLHmLpXhF68A"
+        // );
+        // const decoder = new TextDecoder();
+        // let data = "";
+
+        // for await (const chunk of stream) {
+        //   // chunks of data are returned as a Uint8Array, convert it back to a string
+        //   data += decoder.decode(chunk, { stream: true });
+        // }
+
+        // console.log(data);
+
+        // let dataChunk;
+        // let message;
+        // // Use a while loop to repeatedly call the next method
+        // // until the done flag is true
+        // while (!(dataChunk = dataGenerator.next()).done) {
+        //   // The data is not finished, so do something with the dataChunk
+        //   message += dataChunk.value;
+        // }
+
+        // // The final value is stored in the value property of the dataChunk object
+        // message += dataChunk.value;
+        // console.log("ipfsHash", ipfsHash);
+
+        // const stream = ipfsClient.cat(ipfsHash);
+        // console.log("stream", stream);
+        // const decoder = new TextDecoder();
+        // let data = "";
+
+        // for await (const chunk of stream) {
+        //   console.log("chunk", chunk);
+        //   // chunks of data are returned as a Uint8Array, convert it back to a string
+        //   data += decoder.decode(chunk, { stream: true });
+        // }
+
+        // console.log("This is the data", message);
+      });
+    };
+
+    fetchIPFSData();
+  }, [ipfsClient]);
 
   const RenderPropoals = () => {
     return allProposals.map((proposal, key) => (
@@ -83,27 +167,6 @@ const AllProposal = () => {
             </div>
           </div>
           <RenderPropoals />
-        </div>
-
-        <div className="flex flex-col mb-8 lg:mb-16 space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
-          <a
-            href="#"
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:focus:ring-primary-900"
-          >
-            Learn more
-            <svg
-              className="ml-2 -mr-1 w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
-          </a>
         </div>
       </div>
     </section>
