@@ -53,6 +53,7 @@ const AllProposal = () => {
         // loop through the grants and fetch the ipfs data
         data.data.grants.forEach(async (grant) => {
           const stream = ipfsClient.cat(grant.ipfs);
+          console.log("stream",stream)
           const decoder = new TextDecoder();
           let data = "";
 
