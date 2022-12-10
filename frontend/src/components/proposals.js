@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
+import axios from "axios";
 
 import { store } from "../store/store";
 import { truncateWalletAddress, getBadgeLabel } from "./utils";
@@ -13,13 +13,11 @@ const truncateDescription = (str) => {
   return str.slice(0, 143) + "...";
 };
 
-// Replace with the actual API endpoint you want to call
 const API_ENDPOINT =
   "https://api.thegraph.com/subgraphs/name/shreyaspapi/ubegrants";
 
-// Set the parameters for the request
 const graphQuery = `
-    {
+  query {
       grants(first: 5) {
         id
         grantId
@@ -29,11 +27,6 @@ const graphQuery = `
       }
     }
   `;
-
-const appoloClient = new ApolloClient({
-  uri: API_ENDPOINT,
-  cache: new InMemoryCache(),
-});
 
 const AllProposal = () => {
   const globalState = useContext(store);
@@ -50,53 +43,28 @@ const AllProposal = () => {
     const fetchIPFSData = async () => {
       if (!ipfsClient) return;
 
-      const graph = await appoloClient.query({
-        query: gql(graphQuery),
+      axios.post(API_ENDPOINT, {
+        query: graphQuery,
+      }).then((res) => {
+        const data = res.data;
+
+        console.log("data: ", data);
+
+        // loop through the grants and fetch the ipfs data
+        data.data.grants.forEach(async (grant) => {
+          const stream = ipfsClient.cat(grant.ipfs);
+          const decoder = new TextDecoder();
+          let data = "";
+
+          for await (const chunk of stream) {
+            // chunks of data are returned as a Uint8Array, convert it back to a string
+            data += decoder.decode(chunk, { stream: true });
+          }
+
+          console.log(data);
+        });
       });
 
-      graph.data.grants.forEach(async (grant) => {
-        console.log("grant", grant);
-        const ipfsHash = grant.ipfs;
-
-        // const stream = ipfsClient.cat(
-        //   "QmPChd2hVbrJ6bfo3WBcTW4iZnpHm8TEzWkLHmLpXhF68A"
-        // );
-        // const decoder = new TextDecoder();
-        // let data = "";
-
-        // for await (const chunk of stream) {
-        //   // chunks of data are returned as a Uint8Array, convert it back to a string
-        //   data += decoder.decode(chunk, { stream: true });
-        // }
-
-        // console.log(data);
-
-        // let dataChunk;
-        // let message;
-        // // Use a while loop to repeatedly call the next method
-        // // until the done flag is true
-        // while (!(dataChunk = dataGenerator.next()).done) {
-        //   // The data is not finished, so do something with the dataChunk
-        //   message += dataChunk.value;
-        // }
-
-        // // The final value is stored in the value property of the dataChunk object
-        // message += dataChunk.value;
-        // console.log("ipfsHash", ipfsHash);
-
-        // const stream = ipfsClient.cat(ipfsHash);
-        // console.log("stream", stream);
-        // const decoder = new TextDecoder();
-        // let data = "";
-
-        // for await (const chunk of stream) {
-        //   console.log("chunk", chunk);
-        //   // chunks of data are returned as a Uint8Array, convert it back to a string
-        //   data += decoder.decode(chunk, { stream: true });
-        // }
-
-        // console.log("This is the data", message);
-      });
     };
 
     fetchIPFSData();
