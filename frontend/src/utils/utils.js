@@ -1,3 +1,8 @@
+import axios from "axios";
+
+import { API_ENDPOINT  } from "./constants";
+import { useWaitForTransaction } from "wagmi";
+
 const BadgeStateToText = {
   0: "Pending",
   1: "Active",
@@ -46,11 +51,17 @@ export const truncateDescription = (str) => {
   if (str.length < 143) {
     return str;
   }
-
   return str.slice(0, 143) + "...";
 };
 
+export const getIPFSHash = async (ipfsClient, data) => {
+  if (!ipfsClient) return
+  const { cid } = await ipfsClient.add(JSON.stringify(data));
+  return cid.toString();
+};
+
 export const getIPFSDocument = async (ipfsClient, ipfsHash) => {
+  if (!ipfsClient) return
   const stream = await ipfsClient.cat(ipfsHash);
   const decoder = new TextDecoder();
   let ipfsData = "";
@@ -63,3 +74,66 @@ export const getIPFSDocument = async (ipfsClient, ipfsHash) => {
   ipfsData = JSON.parse(ipfsData);
   return ipfsData;
 };
+
+export const getGrantDataFromGraph = async (grantId) => {
+  const query = `
+    query {
+      grants(first: 1, where: {id: ${grantId}}) {
+        id
+        grantId
+        state
+        ipfs
+        grantee
+        nextPayout
+        time
+      }
+    }
+  `
+  const response = await axios.post(API_ENDPOINT, {
+    query: query,
+  })
+
+  return response.data.data.grants[0];
+};
+
+export const getMilestonesForGrant = async (grantId) => {
+  const query = `
+    query {
+      grantMilestoneDeliveries(first: 100, where: {id: "0x${grantId}%"}) {
+        id
+        ipfsHash
+        state
+        time
+      }
+    }
+  `
+  console.log("query", query)
+  const response = await axios.post(API_ENDPOINT, {
+    query: query,
+  })
+
+  console.log("response", response)
+
+  return response.data.data.grants;
+};
+
+export const WaitForTransaction = ({ txHash }) => {
+  const { data, isError, isFetching } = useWaitForTransaction({
+    hash: txHash,
+  });
+
+  if (isFetching)
+    return (
+      <div className="text-green-500 mt-2">
+        Waiting for transaction to be mined...
+      </div>
+    );
+  if (isError)
+    return (
+      <div className="text-red-500 mt-2">
+        Some thing went wrong. Please try again later.
+      </div>
+    );
+  return <div>Transaction: {JSON.stringify(data)}</div>;
+};
+

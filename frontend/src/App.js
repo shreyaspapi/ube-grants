@@ -26,7 +26,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/proposal/:ipfsHash",
+    path: "/proposal/:proposalId",
     element: (
       <>
         <Header />

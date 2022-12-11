@@ -1,19 +1,19 @@
 import { useEffect, useState, useContext } from "react";
+import { Link } from "react-router-dom";
+
 import axios from "axios";
-import ClipLoader from "react-spinners/ClipLoader";
+import ReactMarkdown from "react-markdown";
 
+import {Spinner} from "./spinner"
 import { store } from "../store/store";
-
 import {
   truncateWalletAddress,
   getBadgeLabel,
   truncateDescription,
   getIPFSDocument,
-} from "./utils";
-import ReactMarkdown from "react-markdown";
+} from "../utils/utils";
+import {API_ENDPOINT} from "../utils/constants"
 
-const API_ENDPOINT =
-  "https://api.thegraph.com/subgraphs/name/shreyaspapi/ubegrants";
 
 const getDefaultGraphQuery = () => {
   return `query {
@@ -58,19 +58,21 @@ const AllProposal = () => {
     setGraphQuery(newGraphQuery);
   };
 
+
   useEffect(() => {
     const fetchIPFSData = async () => {
       if (!ipfsClient) return;
 
       // start loading
       setLoadProposals(true);
+      setAllProposals([])
+
       axios
         .post(API_ENDPOINT, {
           query: graphQuery,
         })
         .then((res) => {
           const response = res.data;
-          console.log("response: ", response);
           if (response.data.grants.length === 0) {
             setAllProposals([]);
             // stop loading
@@ -81,7 +83,6 @@ const AllProposal = () => {
           // loop through the grants and fetch the ipfs data
           response.data.grants.forEach(async (grant) => {
             const ipfsData = await getIPFSDocument(ipfsClient, grant.ipfs);
-            console.log(ipfsData)
             setAllProposals((allProposals) => [
               ...allProposals,
               { ...ipfsData, ...grant },
@@ -98,7 +99,6 @@ const AllProposal = () => {
     fetchIPFSData();
   }, [ipfsClient, graphQuery]);
 
-  console.log("allProposals: ", allProposals);
   const RenderPropoals = () => {
     // if length is 0, then no proposals, add a message saying no proposals
     if (!loadProposals && allProposals.length === 0) {
@@ -117,27 +117,15 @@ const AllProposal = () => {
         key={key}
         className="mb-8 block max-w-8xl p-6 mx-auto bg-white border border-gray-200 rounded-lg shadow-md hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
       >
+      <Link to={`/proposal/${proposal.id}`}>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center space-x-1">
             <div data-headlessui-state="">
-              <button
-                className="outline-none"
-                id="headlessui-popover-button-14"
-                type="button"
-                aria-expanded="false"
-                data-headlessui-state=""
-              >
-                <a
-                  href="#/profile/0xd54A2392c8F2AD3a4e927Cf24EC12797f2503C7b"
-                  className="whitespace-nowrap"
-                >
-                  <div className="flex flex-nowrap items-center space-x-1">
-                    <span className="w-full text-sm cursor-pointer truncate text-skin-link">
-                      {truncateWalletAddress(proposal.grantee)}
-                    </span>
-                  </div>
-                </a>
-              </button>
+              <div className="flex flex-nowrap items-center space-x-1">
+                <span className="w-full text-sm cursor-pointer truncate text-skin-link">
+                  {truncateWalletAddress(proposal.grantee)}
+                </span>
+              </div>
             </div>
           </div>
           {getBadgeLabel(proposal.state)}
@@ -149,6 +137,7 @@ const AllProposal = () => {
         <ReactMarkdown>
           {truncateDescription(proposal.description)}
         </ReactMarkdown>
+      </Link>
       </div>
     ));
   };
@@ -179,13 +168,7 @@ const AllProposal = () => {
           </div>
           {loadProposals && (
             <div className="flex justify-center">
-              <ClipLoader
-                color={"red"}
-                loading={loadProposals}
-                size={30}
-                aria-label="Loading Spinner"
-                data-testid="loader"
-              />
+              <Spinner loading={loadProposals} />
             </div>
           )}
           <RenderPropoals />

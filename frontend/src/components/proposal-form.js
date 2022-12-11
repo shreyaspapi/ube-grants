@@ -3,14 +3,14 @@ import {
   useContract,
   useSigner,
   useAccount,
-  useConnect,
-  useWaitForTransaction,
+  useConnect
 } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import ReactMarkdown from "react-markdown";
 
 import { store } from "../store/store";
-import { UBE_CONTRACT_ADDRESS, ABI_JSON } from "../utils/getContract";
+import { UBE_CONTRACT_ADDRESS, ABI_JSON } from "../utils/constants";
+import { getIPFSHash, WaitForTransaction } from "../utils/utils";
 
 const dummyMarkDownDescription =
   "# A demo of `nemo`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n";
@@ -137,25 +137,6 @@ const PreviewMilestone = ({
   );
 };
 
-const WaitForTransaction = ({ txHash }) => {
-  const { data, isError, isFetching } = useWaitForTransaction({
-    hash: txHash,
-  });
-
-  if (isFetching)
-    return (
-      <div className="text-green-500 mt-2">
-        Waiting for transaction to be mined...
-      </div>
-    );
-  if (isError)
-    return (
-      <div className="text-red-500 mt-2">
-        Some thing went wrong. Please try again later.
-      </div>
-    );
-  return <div>Transaction: {JSON.stringify(data)}</div>;
-};
 
 const ProposalForm = () => {
   const globalState = useContext(store);
@@ -196,20 +177,8 @@ const ProposalForm = () => {
   const addProposalToIPFS = async (formData) => {
     if (!ipfsClient) return;
 
-    const { cid } = await ipfsClient.add(JSON.stringify(formData));
-    return cid.toString();
-    // console.info(cid.toString());
-
-    // const stream = ipfsClient.cat(cid.toString());
-    // const decoder = new TextDecoder();
-    // let data = "";
-
-    // for await (const chunk of stream) {
-    //   // chunks of data are returned as a Uint8Array, convert it back to a string
-    //   data += decoder.decode(chunk, { stream: true });
-    // }
-
-    // console.log(data);
+    const cid = await getIPFSHash(ipfsClient, formData);
+    return cid;
   };
 
   const submitMilestoneToContract = async (ipfsHash, milestoneAmounts) => {
@@ -275,15 +244,12 @@ const ProposalForm = () => {
       title: proposalTitle,
       description: description,
       milestones: allMilestoneDetails,
+      totalAmount: totalGrantAmount
     };
-    console.log("proposalForm: ", proposalForm);
     const ipfsHash = await addProposalToIPFS(proposalForm);
-    console.log("ipfsHash", ipfsHash);
-
     const milestoneAmounts = allMilestoneDetails.map(
       (milestone) => milestone.amount
     );
-    console.log("allMilestoneAmounts: ", milestoneAmounts);
 
     if (!ipfsHash || milestoneAmounts.length < 1) return;
     const tx = submitMilestoneToContract(ipfsHash, milestoneAmounts);
