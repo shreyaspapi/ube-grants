@@ -53,7 +53,7 @@ const Proposal = () => {
 
     }
 
-    // getDAOMiltisag()
+    // getDAOMiltisag() 
     processIPFSHash()
   }, [ipfsClient, proposalId]);
 
