@@ -1,6 +1,8 @@
-import { getBadgeLabel, truncateWalletAddress } from "./utils";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 
+import { getBadgeLabel, truncateWalletAddress } from "./utils";
 import proposalJSON from "../data/dummy.json";
 import dummyData from "./dummData.json";
 
@@ -9,6 +11,10 @@ const data = proposalJSON[0];
 // QmfWcSnmfb3cEtqthWkm5T7svJebEcuCr8MQGCFBsT6rbN
 
 const Proposal = () => {
+  const { ipfsHash } = useParams();
+  console.log("ipfsHash", ipfsHash);
+  const [proposal, setProposal] = useState(null);
+
   return (
     <>
       <div className="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-white dark:bg-gray-900 text-left">
@@ -39,9 +45,9 @@ const Proposal = () => {
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         ></path>
                       </svg>
                       <div className="ml-1 text-sm font-medium text-gray-700 hover:text-gray-900 md:ml-2 dark:text-gray-400 dark:hover:text-white">
@@ -57,11 +63,7 @@ const Proposal = () => {
                   {truncateWalletAddress(data.id)}
                 </span>
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  <time
-                    pubdate
-                    datetime="2022-02-08"
-                    title="February 8th, 2022"
-                  >
+                  <time dateTime="2022-02-08" title="February 8th, 2022">
                     Feb. 8, 2022
                   </time>
                 </span>
@@ -75,16 +77,13 @@ const Proposal = () => {
             <p className="text-2xl font-semibold">Proposal Details</p>
             <p className="text-md">{dummyData.description}</p>
 
-            {dummyData.milestones.map((milestone) => {
+            {dummyData.milestones.map((milestone, index) => {
               return (
-                <p className="text-md prose lg:prose-xl">
-                  <ReactMarkdown>{milestone.description}</ReactMarkdown>
-                </p>
+                <ReactMarkdown key={index}>
+                  {milestone.description}
+                </ReactMarkdown>
               );
             })}
-            <p className="prose lg:prose-xl">
-              {/* <ReactMarkdown>{description}</ReactMarkdown> */}
-            </p>
 
             <section className="not-format">
               <div className="flex justify-between items-center mb-6">
@@ -142,11 +141,7 @@ const Proposal = () => {
                       <span>{truncateWalletAddress(data.id)}</span>
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <time
-                        pubdate
-                        datetime="2022-02-08"
-                        title="February 8th, 2022"
-                      >
+                      <time dateTime="2022-02-08" title="February 8th, 2022">
                         Feb. 8, 2022
                       </time>
                     </p>
@@ -225,9 +220,9 @@ const Proposal = () => {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                       ></path>
                     </svg>

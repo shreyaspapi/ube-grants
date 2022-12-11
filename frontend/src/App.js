@@ -18,15 +18,30 @@ import "./App.css";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AllProposal />,
+    element: (
+      <>
+        <Header />
+        <AllProposal />
+      </>
+    ),
   },
   {
-    path: "/proposal",
-    element: <Proposal />,
+    path: "/proposal/:ipfsHash",
+    element: (
+      <>
+        <Header />
+        <Proposal />
+      </>
+    ),
   },
   {
     path: "/submit-new-proposal",
-    element: <ProposalForm />,
+    element: (
+      <>
+        <Header />
+        <ProposalForm />
+      </>
+    ),
   },
 ]);
 
@@ -58,7 +73,6 @@ function App() {
     <>
       <WagmiConfig client={wagmiClient}>
         <div className="App">
-          <Header />
           <RouterProvider router={router} />
         </div>
       </WagmiConfig>
