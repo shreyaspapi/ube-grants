@@ -33,6 +33,7 @@ const BADGE_MAP = {
     </span>
   ),
 };
+
 // { Pending, Active, Rejected, Completed, Cancelled }
 export const getBadgeLabel = (label) => {
   return BADGE_MAP[BadgeStateToText[label]];

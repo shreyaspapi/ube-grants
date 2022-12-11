@@ -13,6 +13,7 @@ const navLinks = [
   },
 ];
 
+
 const Header = () => {
   const ConnectWalletButton = () => {
     return <Web3Button />;
@@ -35,7 +36,7 @@ const Header = () => {
               alt="Flowbite Logo"
             />
             <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-              Flowbite
+              UbeGrants
             </span>
           </a>
           <div className="flex items-center lg:order-2">
@@ -98,6 +99,7 @@ const Header = () => {
 
               {/* <li>
                 <Link to="/">
+
                   <div
                     className="block py-2 pr-4 pl-3 text-white rounded bg-primary-700 lg:bg-transparent lg:text-primary-700 lg:p-0 dark:text-white"
                     aria-current="page"
@@ -134,7 +136,7 @@ const Header = () => {
                   href="#"
                   className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                 >
-                  Team
+                  New Proposal
                 </button>
               </li>
               <li>
@@ -142,7 +144,7 @@ const Header = () => {
                   href="#"
                   className="block py-2 pr-4 pl-3 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
                 >
-                  Contact
+                  Discord
                 </button>
               </li> */}
             </ul>

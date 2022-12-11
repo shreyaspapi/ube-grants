@@ -3,6 +3,7 @@ import axios from "axios";
 import ClipLoader from "react-spinners/ClipLoader";
 
 import { store } from "../store/store";
+
 import {
   truncateWalletAddress,
   getBadgeLabel,
