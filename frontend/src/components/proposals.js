@@ -80,7 +80,8 @@ const AllProposal = () => {
 
           // loop through the grants and fetch the ipfs data
           response.data.grants.forEach(async (grant) => {
-            const ipfsData = getIPFSDocument(ipfsClient, grant.ipfs);
+            const ipfsData = await getIPFSDocument(ipfsClient, grant.ipfs);
+            console.log(ipfsData)
             setAllProposals((allProposals) => [
               ...allProposals,
               { ...ipfsData, ...grant },
