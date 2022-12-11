@@ -5,10 +5,10 @@ import { useContract, useSigner, useAccount, useProvider } from "wagmi";
 import Rodal from 'rodal';
 
 import ModalComponent from "./modal"
-
+import {Spinner} from "./spinner"
 import { store } from "../store/store";
 import { UBE_CONTRACT_ADDRESS, ABI_JSON } from "../utils/constants";
-import { getBadgeLabel, truncateWalletAddress, getGrantDataFromGraph, getIPFSDocument, getIPFSHash } from "../utils/utils";
+import { getBadgeLabel, truncateWalletAddress, getGrantDataFromGraph, getIPFSDocument, getIPFSHash, getBadgeState } from "../utils/utils";
 import 'rodal/lib/rodal.css';
 import { getDefaultProvider } from "ethers";
 
@@ -24,20 +24,20 @@ const Proposal = () => {
     abi: ABI_JSON,
     signerOrProvider: signer,
   });
-
-  const contractWithoutSigner = useContract({
-    address: UBE_CONTRACT_ADDRESS,
-    abi: ABI_JSON
-  });
-
   const { address } = useAccount()
+
+  // const contractWithoutSigner = useContract({
+  //   address: UBE_CONTRACT_ADDRESS,
+  //   abi: ABI_JSON
+  // });
+
   
   const [proposal, setProposal] = useState(null);
   const [milestones, setMilestones] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [modalDescription, setModalDescription] = useState('');
   const [currentTxHash, setCurrentTxHash] = useState(false)
-  const [daoMultisig, setDaoMultisig] = useState('')
+  // const [daoMultisig, setDaoMultisig] = useState('')
 
   useEffect(() => {
     const processIPFSHash = async () => {
@@ -57,16 +57,10 @@ const Proposal = () => {
     processIPFSHash()
   }, [ipfsClient, proposalId]);
 
-  console.log(
-    "milestones", milestones
-  )
-
-  const getDAOMiltisag = async () => {
-    console.log("calling DAOMltisag")
-    const daoMultisig = await contract.daoMultisig();
-    setDaoMultisig(daoMultisig.toLowerCase())
-    console.log("daoMultisig", daoMultisig)
-  }
+  // const getDAOMiltisag = async () => {
+  //   const daoMultisig = await contract.daoMultisig();
+  //   setDaoMultisig(daoMultisig.toLowerCase())
+  // }
 
   const convertEpochTime = (epochTime) => {
     const date = new Date(epochTime * 1000);
@@ -106,8 +100,6 @@ const Proposal = () => {
     if(!ipfsClient) return
     
     const ipfsHash = await getIPFSHash(ipfsClient, modalDescription)
-    console.log("ipfsHash", ipfsHash)
-
     // Do a contract call
     const tx = await contract.functions.applyForGrantMilestone(proposalId, ipfsHash)
     setCurrentTxHash(tx.hash);
@@ -238,7 +230,7 @@ const Proposal = () => {
                     </time>
                   </p>
                   <p className="ml-2">
-                    {getBadgeLabel(milestone.state)}
+                    {getBadgeState(milestone.state)}
 
                   </p>
                 </div>     
@@ -274,7 +266,7 @@ const Proposal = () => {
 
   return (
     <>
-      {proposal && <RenderPropsal />}
+      {proposal ? <RenderPropsal /> : <Spinner />}
       <Rodal visible={openModal} onClose={onToggleModal} height={350} showMask showCloseButton={true} >
         <ModalComponent onSubmitDescription={onSubmitDescription} onMilestoneDescriptionChange={onMilestoneDescriptionChange} currentTxHash={currentTxHash} />
       </Rodal>

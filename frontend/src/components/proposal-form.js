@@ -12,6 +12,8 @@ import { store } from "../store/store";
 import { UBE_CONTRACT_ADDRESS, ABI_JSON } from "../utils/constants";
 import { getIPFSHash, WaitForTransaction } from "../utils/utils";
 
+import {ethers} from "ethers";
+
 const dummyMarkDownDescription =
   "# A demo of `nemo`\n\n`react-markdown` is a markdown component for React.\n\n👉 Changes are re-rendered as you type.\n\n👈 Try writing some markdown on the left.\n\n![https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096](https://pbs.twimg.com/media/Fivwgv9X0AYM303?format=jpg&name=4096x4096)\n\n## Overview\n\n* Follows [CommonMark](https://commonmark.org)\n* Optionally follows [GitHub Flavored Markdown](https://github.github.com/gfm/)\n";
 
@@ -248,7 +250,8 @@ const ProposalForm = () => {
     };
     const ipfsHash = await addProposalToIPFS(proposalForm);
     const milestoneAmounts = allMilestoneDetails.map(
-      (milestone) => milestone.amount * (10 ** 18)
+      // convest to wei
+      (milestone) => ethers.utils.parseEther(milestone.amount.toString())
     );
 
     if (!ipfsHash || milestoneAmounts.length < 1) return;

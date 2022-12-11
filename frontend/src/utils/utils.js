@@ -37,12 +37,29 @@ const BADGE_MAP = {
       Cancelled
     </span>
   ),
+  Paid: (
+    <span className="bg-green-100 text-green-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded dark:bg-green-200 dark:text-green-900">
+      Paid
+    </span>
+  ),
 };
 
 // { Pending, Active, Rejected, Completed, Cancelled }
 export const getBadgeLabel = (label) => {
   return BADGE_MAP[BadgeStateToText[label]];
 };
+
+export const getBadgeState = (label) => {
+  if (label) {
+    return BADGE_MAP["Paid"];
+  }
+
+  if (label === false) {
+    return BADGE_MAP["Rejected"];
+  }
+
+  return BADGE_MAP["Pending"];
+}
 
 export const truncateWalletAddress = (str) =>
   str.slice(0, 6) + "..." + str.slice(-4);
