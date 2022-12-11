@@ -3,7 +3,7 @@ import axios from "axios";
 
 import { store } from "../store/store";
 import { truncateWalletAddress, getBadgeLabel } from "./utils";
-import proposalJSON from "../data/dummy.json";
+import ReactMarkdown from "react-markdown";
 
 const truncateDescription = (str) => {
   if (str.length < 143) {
@@ -16,28 +16,51 @@ const truncateDescription = (str) => {
 const API_ENDPOINT =
   "https://api.thegraph.com/subgraphs/name/shreyaspapi/ubegrants";
 
-const graphQuery = `
-  query {
-      grants(first: 5) {
+const getDefaultGraphQuery = () => {
+  return `query {
+      grants(first: 100) {
         id
         grantId
         state
         ipfs
         grantee
+        time
       }
     }
-  `;
+  `
+}
 
 const AllProposal = () => {
   const globalState = useContext(store);
   const { ipfsClient } = globalState.state;
-  console.log("ipfsClient: ", ipfsClient);
 
   const [allProposals, setAllProposals] = useState([]);
+  const [graphQuery, setGraphQuery] = useState();
+  
+  console.log("graphQuery", graphQuery)
 
-  useEffect(() => {
-    setAllProposals(proposalJSON);
-  }, []);
+
+  const createQuery = (event) => {
+    const selectedType = event.target.value
+    console.log("selectedType", selectedType)
+    let newGraphQuery;
+    if(selectedType == 'All'){
+      newGraphQuery = getDefaultGraphQuery()
+    }else{
+      newGraphQuery = `query {
+          grants(first: 100, where: {state: ${selectedType}}) {
+            id
+            grantId
+            state
+            ipfs
+            grantee
+            time
+          }
+        }
+      `
+    }
+    setGraphQuery(newGraphQuery)
+  }
 
   useEffect(() => {
     const fetchIPFSData = async () => {
@@ -46,30 +69,35 @@ const AllProposal = () => {
       axios.post(API_ENDPOINT, {
         query: graphQuery,
       }).then((res) => {
-        const data = res.data;
-
-        console.log("data: ", data);
-
+        const response = res.data;
+        
         // loop through the grants and fetch the ipfs data
-        data.data.grants.forEach(async (grant) => {
+        response.data.grants.forEach(async (grant) => {
           const stream = ipfsClient.cat(grant.ipfs);
-          console.log("stream",stream)
           const decoder = new TextDecoder();
-          let data = "";
+          let ipfsData = "";
 
           for await (const chunk of stream) {
             // chunks of data are returned as a Uint8Array, convert it back to a string
-            data += decoder.decode(chunk, { stream: true });
+            ipfsData += decoder.decode(chunk, { stream: true });
           }
 
-          console.log(data);
+          ipfsData = JSON.parse(ipfsData);
+          // concat grant and data and push to allProposals
+          setAllProposals((allProposals) => [...allProposals, { ...grant, ...ipfsData }]);
         });
+      }).catch((err) => {
+        console.log("Error fetching data from the graph: ", err);
       });
-
+      
     };
 
     fetchIPFSData();
-  }, [ipfsClient]);
+  }, [ipfsClient, graphQuery]);
+
+  useEffect(() => {
+    setGraphQuery(getDefaultGraphQuery())
+  }, [])
 
   const RenderPropoals = () => {
     return allProposals.map((proposal, key) => (
@@ -93,21 +121,21 @@ const AllProposal = () => {
                 >
                   <div className="flex flex-nowrap items-center space-x-1">
                     <span className="w-full text-sm cursor-pointer truncate text-skin-link">
-                      {truncateWalletAddress(proposal.id)}
+                      {truncateWalletAddress(proposal.grantee)}
                     </span>
                   </div>
                 </a>
               </button>
             </div>
           </div>
-          {getBadgeLabel(proposal.status)}
+          {getBadgeLabel(proposal.state)}
         </div>
 
         <h5 className="mb-2 text-xl font-semibold tracking-tight text-gray-900 dark:text-white text-left">
-          {proposal.proposalTitle}
+          {proposal.title}
         </h5>
         <p className="font-normal text-lg text-gray-700 dark:text-gray-400 text-left">
-          {truncateDescription(proposal.proposalDescriptions)}
+          <ReactMarkdown>{truncateDescription(proposal.description)}</ReactMarkdown>
         </p>
       </div>
     ));
@@ -126,12 +154,14 @@ const AllProposal = () => {
               <select
                 id="countries"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-md p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                onChange={createQuery}
               >
-                <option defaultValue>All</option>
-                <option value="CA">Pending</option>
-                <option value="FR">Active</option>
-                <option value="DE">Completed</option>
-                <option value="DE">Cancelled</option>
+                <option defaultValue="All">All</option>
+                <option value="0">Pending</option>
+                <option value="1">Active</option>
+                <option value="2">Rejected</option>
+                <option value="3">Completed</option>
+                <option value="4">Cancelled</option>
               </select>
             </div>
           </div>
