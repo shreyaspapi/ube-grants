@@ -1,24 +1,23 @@
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
+import ClipLoader from "react-spinners/ClipLoader";
 
 import { store } from "../store/store";
-import { truncateWalletAddress, getBadgeLabel } from "./utils";
+
+import {
+  truncateWalletAddress,
+  getBadgeLabel,
+  truncateDescription,
+  getIPFSDocument,
+} from "./utils";
 import ReactMarkdown from "react-markdown";
-
-const truncateDescription = (str) => {
-  if (str.length < 143) {
-    return str;
-  }
-
-  return str.slice(0, 143) + "...";
-};
 
 const API_ENDPOINT =
   "https://api.thegraph.com/subgraphs/name/shreyaspapi/ubegrants";
 
 const getDefaultGraphQuery = () => {
   return `query {
-      grants(first: 100) {
+      grants(first: 100, orderBy: time, orderDirection: desc) {
         id
         grantId
         state
@@ -27,28 +26,25 @@ const getDefaultGraphQuery = () => {
         time
       }
     }
-  `
-}
+  `;
+};
 
 const AllProposal = () => {
   const globalState = useContext(store);
   const { ipfsClient } = globalState.state;
 
   const [allProposals, setAllProposals] = useState([]);
-  const [graphQuery, setGraphQuery] = useState();
-  
-  console.log("graphQuery", graphQuery)
-
+  const [graphQuery, setGraphQuery] = useState(getDefaultGraphQuery());
+  const [loadProposals, setLoadProposals] = useState(true);
 
   const createQuery = (event) => {
-    const selectedType = event.target.value
-    console.log("selectedType", selectedType)
+    const selectedType = event.target.value;
     let newGraphQuery;
-    if(selectedType == 'All'){
-      newGraphQuery = getDefaultGraphQuery()
-    }else{
+    if (selectedType === "All") {
+      newGraphQuery = getDefaultGraphQuery();
+    } else {
       newGraphQuery = `query {
-          grants(first: 100, where: {state: ${selectedType}}) {
+          grants(first: 100, orderBy: time, orderDirection: desc, where: {state: ${selectedType}}) {
             id
             grantId
             state
@@ -57,49 +53,64 @@ const AllProposal = () => {
             time
           }
         }
-      `
+      `;
     }
-    setGraphQuery(newGraphQuery)
-  }
+    setGraphQuery(newGraphQuery);
+  };
 
   useEffect(() => {
     const fetchIPFSData = async () => {
       if (!ipfsClient) return;
 
-      axios.post(API_ENDPOINT, {
-        query: graphQuery,
-      }).then((res) => {
-        const response = res.data;
-        
-        // loop through the grants and fetch the ipfs data
-        response.data.grants.forEach(async (grant) => {
-          const stream = ipfsClient.cat(grant.ipfs);
-          const decoder = new TextDecoder();
-          let ipfsData = "";
-
-          for await (const chunk of stream) {
-            // chunks of data are returned as a Uint8Array, convert it back to a string
-            ipfsData += decoder.decode(chunk, { stream: true });
+      // start loading
+      setLoadProposals(true);
+      axios
+        .post(API_ENDPOINT, {
+          query: graphQuery,
+        })
+        .then((res) => {
+          const response = res.data;
+          console.log("response: ", response);
+          if (response.data.grants.length === 0) {
+            setAllProposals([]);
+            // stop loading
+            setLoadProposals(false);
+            return;
           }
 
-          ipfsData = JSON.parse(ipfsData);
-          // concat grant and data and push to allProposals
-          setAllProposals((allProposals) => [...allProposals, { ...grant, ...ipfsData }]);
+          // loop through the grants and fetch the ipfs data
+          response.data.grants.forEach(async (grant) => {
+            const ipfsData = getIPFSDocument(ipfsClient, grant.ipfs);
+            setAllProposals((allProposals) => [
+              ...allProposals,
+              { ...ipfsData, ...grant },
+            ]);
+          });
+          // stop loading
+          setLoadProposals(false);
+        })
+        .catch((err) => {
+          console.log("Error fetching data from the graph: ", err);
         });
-      }).catch((err) => {
-        console.log("Error fetching data from the graph: ", err);
-      });
-      
     };
 
     fetchIPFSData();
   }, [ipfsClient, graphQuery]);
 
-  useEffect(() => {
-    setGraphQuery(getDefaultGraphQuery())
-  }, [])
-
+  console.log("allProposals: ", allProposals);
   const RenderPropoals = () => {
+    // if length is 0, then no proposals, add a message saying no proposals
+    if (!loadProposals && allProposals.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Uh oh, looks like we hit a roadblock. Try tweaking your filter to
+            uncover some hidden gems.
+          </h1>
+        </div>
+      );
+    }
+
     return allProposals.map((proposal, key) => (
       <div
         key={key}
@@ -134,9 +145,9 @@ const AllProposal = () => {
         <h5 className="mb-2 text-xl font-semibold tracking-tight text-gray-900 dark:text-white text-left">
           {proposal.title}
         </h5>
-        <p className="font-normal text-lg text-gray-700 dark:text-gray-400 text-left">
-          <ReactMarkdown>{truncateDescription(proposal.description)}</ReactMarkdown>
-        </p>
+        <ReactMarkdown>
+          {truncateDescription(proposal.description)}
+        </ReactMarkdown>
       </div>
     ));
   };
@@ -152,7 +163,7 @@ const AllProposal = () => {
 
             <div className="flex justify-end mb-4">
               <select
-                id="countries"
+                id="proposalState"
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-md p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 onChange={createQuery}
               >
@@ -165,6 +176,17 @@ const AllProposal = () => {
               </select>
             </div>
           </div>
+          {loadProposals && (
+            <div className="flex justify-center">
+              <ClipLoader
+                color={"red"}
+                loading={loadProposals}
+                size={30}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            </div>
+          )}
           <RenderPropoals />
         </div>
       </div>

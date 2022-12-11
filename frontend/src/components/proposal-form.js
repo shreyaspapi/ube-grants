@@ -285,12 +285,10 @@ const ProposalForm = () => {
     );
     console.log("allMilestoneAmounts: ", milestoneAmounts);
 
-    // if (!ipfsHash || milestoneAmounts.length < 1) return;
-    // const tx = submitMilestoneToContract(ipfsHash, milestoneAmounts);
-    // setCurrentTxHash(tx.hash);
+    if (!ipfsHash || milestoneAmounts.length < 1) return;
+    const tx = submitMilestoneToContract(ipfsHash, milestoneAmounts);
+    setCurrentTxHash(tx.hash);
   };
-
-  isConnected = true;
 
   return (
     <section className="bg-white dark:bg-gray-900">
