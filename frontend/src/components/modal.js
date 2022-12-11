@@ -5,7 +5,7 @@ const ModalForm = ({onMilestoneDescriptionChange, currentTxHash, onSubmitDescrip
         <div className="relative w-full h-full max-w-md md:h-auto">
             <div className="relative bg-white ">
                 <div className="px-6 py-6 lg:px-8">
-                    <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">Apply for milestone 1</h3>
+                    <h3 className="mb-4 text-xl font-medium text-gray-900 dark:text-white">Apply for milestone</h3>
                     <form className="space-y-6" onSubmit={onSubmitDescription}>
                         <div>
                             <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>

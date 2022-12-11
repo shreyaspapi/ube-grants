@@ -85,6 +85,12 @@ export const getGrantDataFromGraph = async (grantId) => {
         ipfs
         grantee
         nextPayout
+        milestoneDeliveries {
+          id
+          ipfsHash
+          state
+          time
+        }
         time
       }
     }
@@ -94,27 +100,6 @@ export const getGrantDataFromGraph = async (grantId) => {
   })
 
   return response.data.data.grants[0];
-};
-
-export const getMilestonesForGrant = async (grantId) => {
-  const query = `
-    query {
-      grantMilestoneDeliveries(first: 100, where: {id: "0x${grantId}%"}) {
-        id
-        ipfsHash
-        state
-        time
-      }
-    }
-  `
-  console.log("query", query)
-  const response = await axios.post(API_ENDPOINT, {
-    query: query,
-  })
-
-  console.log("response", response)
-
-  return response.data.data.grants;
 };
 
 export const WaitForTransaction = ({ txHash }) => {

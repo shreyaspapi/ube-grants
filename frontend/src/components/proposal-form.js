@@ -248,7 +248,7 @@ const ProposalForm = () => {
     };
     const ipfsHash = await addProposalToIPFS(proposalForm);
     const milestoneAmounts = allMilestoneDetails.map(
-      (milestone) => milestone.amount
+      (milestone) => milestone.amount * (10 ** 18)
     );
 
     if (!ipfsHash || milestoneAmounts.length < 1) return;
