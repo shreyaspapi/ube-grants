@@ -8,6 +8,17 @@ Ubeswap is in the process of transitioning platform decision making to the Ubesw
 - Milestone payment approval and cancellation: A DAO Agent multisig wallet has the ability to approve or cancel milestone payments. If a grant's milestones are not met, the funds will be returned to the DAO.
 These contracts are written in Solidity and are built using the Hardhat Ethereum development environment.
 
+## Live URLs
+
+- Subgraph: https://thegraph.com/hosted-service/subgraph/shreyaspapi/ubegrants
+
+- Frontend: https://ubegrants.netlify.app/
+
+- Youtube preview: 
+
+[![](https://markdown-videos.deta/youtube/Ov3N1ujIsOE)](https://www.youtube.com/watch?v=Ov3N1ujIsOE)
+
+
 ## Installation
 
 To use these contracts, you will need to have the following installed:
