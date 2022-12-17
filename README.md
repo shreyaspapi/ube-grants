@@ -16,7 +16,8 @@ These contracts are written in Solidity and are built using the Hardhat Ethereum
 
 - Youtube preview: 
 
-[![](https://markdown-videos.deta/youtube/Ov3N1ujIsOE)](https://www.youtube.com/watch?v=Ov3N1ujIsOE)
+[![ube-grants-video](https://img.youtube.com/vi/Ov3N1ujIsOE/0.jpg)](https://www.youtube.com/watch?v=Ov3N1ujIsOE)
+
 
 
 ## Installation
